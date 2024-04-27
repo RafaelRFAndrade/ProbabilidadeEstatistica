@@ -52,33 +52,37 @@ namespace ProbabilidadeEstatistica.Controllers
         [HttpPost("AddTechVisits")]
         public IActionResult AddTechVisits(List<TechVisitDto> techVisits)
         {
-            foreach (var inputModel in techVisits)
+            if (techVisits.Count > 0)
             {
-                var techVisit = new TechnicalVisits
+                foreach (var inputModel in techVisits)
                 {
-                    Id = inputModel.Id,
-                    DataDeAbertura = DateTime.Parse(inputModel.DataDeAbertura).ToUniversalTime().Date,
-                    NomeCliente = inputModel.NomeCliente,
-                    Cidade = inputModel.Cidade,
-                    Estado = inputModel.Estado,
-                    FilialDoServico = inputModel.FilialDoServico,
-                    Motivo = inputModel.Motivo,
-                    DataProgramada = DateTime.Parse(inputModel.DataProgramada).ToUniversalTime().Date,
-                    DataDoServico = DateTime.Parse(inputModel.DataDoServico).ToUniversalTime().Date,
-                    HoraInicio = TimeSpan.Parse(inputModel.HoraInicio),
-                    HoraTermino = TimeSpan.Parse(inputModel.HoraTermino),
-                    TempoAtendimento = TimeSpan.Parse(inputModel.TempoAtendimento),
-                    DataReprogramacao = DateTime.Parse(inputModel.DataReprogramacao).ToUniversalTime().Date
-                };
+                    var techVisit = new TechnicalVisits
+                    {
+                        Id = inputModel.Id,
+                        DataDeAbertura = DateTime.Parse(inputModel.DataDeAbertura).ToUniversalTime().Date,
+                        NomeCliente = inputModel.NomeCliente,
+                        Cidade = inputModel.Cidade,
+                        Estado = inputModel.Estado,
+                        FilialDoServico = inputModel.FilialDoServico,
+                        Motivo = inputModel.Motivo,
+                        DataProgramada = DateTime.Parse(inputModel.DataProgramada).ToUniversalTime().Date,
+                        DataDoServico = DateTime.Parse(inputModel.DataDoServico).ToUniversalTime().Date,
+                        HoraInicio = TimeSpan.Parse(inputModel.HoraInicio),
+                        HoraTermino = TimeSpan.Parse(inputModel.HoraTermino),
+                        TempoAtendimento = TimeSpan.Parse(inputModel.TempoAtendimento),
+                        DataReprogramacao = DateTime.Parse(inputModel.DataReprogramacao).ToUniversalTime().Date
+                    };
 
-                _db.TechnicalVisits.Add(techVisit);
+                    _db.TechnicalVisits.Add(techVisit);
+                }
+
+                _db.SaveChanges();
             }
-
-            _db.SaveChanges();
-
             return Ok();
         }
+        #endregion
 
+        #region VarianciaPopulacional
         [HttpPost("VariancaPopulacional")]
         public ActionResult<double> CalcularVP(List<double> numeros)
         {
@@ -86,7 +90,9 @@ namespace ProbabilidadeEstatistica.Controllers
 
             return variancia;
         }
+        #endregion
 
+        #region VarianciaAmostral
         [HttpPost("VariancaAmostral")]
         public ActionResult<double> CalcularVA(List<double> numeros)
         {
@@ -94,19 +100,25 @@ namespace ProbabilidadeEstatistica.Controllers
 
             return variancia;
         }
+        #endregion
 
+        #region DesvioPopulacional
         [HttpPost("DP")]
         public ActionResult<double> CalcularDP(List<double> numeros)
         {
             return Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count);
         }
+        #endregion
 
+        #region DesvioAmostral
         [HttpPost("DA")]
         public ActionResult<double> CalcularDA(List<double> numeros)
         {
             return Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / (numeros.Count - 1));
         }
+        #endregion
 
+        #region CV
         [HttpPost("Coeficiente")]
         public ActionResult<string> CalcularCoeficiente(bool EhAmostral, List<double> numeros)
         {
@@ -117,7 +129,9 @@ namespace ProbabilidadeEstatistica.Controllers
 
             return (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count)) / Media(numeros)) * 100).ToString("F2") + "%";
         }
+        #endregion
 
+        #region GetAllManutencaoPreventiva
         [HttpPost("PegarTodosDaManutençãoPreventiva")]
         public ActionResult<double> CalcularNumeroPorAno()
         {
@@ -125,7 +139,9 @@ namespace ProbabilidadeEstatistica.Controllers
 
             return consultas.Count();
         }
+        #endregion
 
+        #region GetAllData
         [HttpPost("PegarTodosPorData")]
         public ActionResult<double> CalcularNumeroPorAno(string dia, string mes)
         {
@@ -137,7 +153,9 @@ namespace ProbabilidadeEstatistica.Controllers
 
             return consultas.Count();
         }
+        #endregion
 
+        #region MediaModaMediana
         [HttpPost("Estatisticas")]
         public IActionResult Estatisticas(List<double> numeros)
         {
