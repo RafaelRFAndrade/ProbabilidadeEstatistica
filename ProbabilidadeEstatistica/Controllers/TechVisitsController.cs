@@ -28,9 +28,9 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
-        #region GetByState
-        [HttpGet("GetByState")]
-        public IActionResult GetByState(string state)
+        #region GetByStateParams
+        [HttpGet("GetByStateParams")]
+        public IActionResult GetByStateParams(string state)
         {
             var techVisits = _db.TechnicalVisits.Where(x => x.Estado == state || x.Estado == state.ToUpper()).ToList();
 
@@ -38,13 +38,62 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
-        #region GetByCity
-        [HttpGet("GetByCity")]
-        public IActionResult GetByCity(string city)
+        #region GetByState
+        [HttpGet("GetBySate")]
+        public IActionResult GetByState()
+        {
+            var techVisits = _db.TechnicalVisits.ToList();
+
+            var vistisByState = techVisits.GroupBy(x => x.Estado).Select(g => new { State = g.Key, Count = g.Count() });
+
+            var results = new List<string>();
+
+            foreach (var visit in vistisByState)
+            {
+                results.Add($"{visit.State}: {visit.Count}");
+            }
+
+            var resultString = string.Join(";", results);
+
+            return Ok(resultString);
+        }
+        #endregion
+
+        #region GetByCityParams
+        [HttpGet("GetByCityParams")]
+        public IActionResult GetByCityParams(string city)
         {
             var techVisits = _db.TechnicalVisits.Where(x => x.Cidade == city).ToList();
 
             return Ok(techVisits.Count);
+        }
+        #endregion
+
+        #region GetByCity
+        [HttpGet("GetByCity")]
+        public IActionResult GetByCity()
+        {
+            // Busca todas as visitas técnicas do banco de dados
+            var techVisits = _db.TechnicalVisits.ToList();
+
+            // Agrupa as visitas técnicas por cidade e conta a quantidade de visitas para cada cidade
+            var visitsByCity = techVisits
+                .GroupBy(x => x.Cidade)
+                .Select(g => new { City = g.Key, Count = g.Count() });
+
+            // Cria uma lista para armazenar os resultados
+            var results = new List<string>();
+
+            // Para cada grupo de visitas por cidade, formata a string e adiciona à lista de resultados
+            foreach (var visit in visitsByCity)
+            {
+                results.Add($"{visit.City}: {visit.Count}");
+            }
+
+            // Concatena os resultados em uma única string separada por ponto e vírgula
+            var resultString = string.Join(";", results);
+
+            return Ok(resultString);
         }
         #endregion
 
@@ -77,7 +126,41 @@ namespace ProbabilidadeEstatistica.Controllers
             var nov = techVisits.Where(x => x.DataDoServico.Month == 11).Count().ToString();
             var dec = techVisits.Where(x => x.DataDoServico.Month == 12).Count().ToString();
 
-            return Ok(jan + ";" + feb + ";" + mar + ";"+ apr + ";" + may + ";" + jun + ";" + jul + ";" + aug + ";" + sep + ";" + oct + ";" + nov + ";" + dec);
+            return Ok(jan + ";" + feb + ";" + mar + ";" + apr + ";" + may + ";" + jun + ";" + jul + ";" + aug + ";" + sep + ";" + oct + ";" + nov + ";" + dec);
+        }
+        #endregion
+
+        #region GetManutencaoPrev
+        [HttpGet("PegarTodosDaManutençãoPreventiva")]
+        public ActionResult<double> GetManutencaoPrev()
+        {
+            var consultas = _db.TechnicalVisits.Where(x => x.Motivo == "Manutenção preventiva").ToList();
+
+            return consultas.Count();
+        }
+        #endregion
+
+        #region GetManutencaoPreventiva
+        [HttpGet("GetManutencaoPreventiva")]
+        public ActionResult<double> GetManutencaoPreventiva(string motivo)
+        {
+            var consultas = _db.TechnicalVisits.Where(x => x.Motivo == motivo).ToList();
+
+            return consultas.Count();
+        }
+        #endregion
+
+        #region GetDataEspecifica
+        [HttpGet("GetDataEspecifica")]
+        public ActionResult<double> GetDataEspecifica(string dia, string mes)
+        {
+            string data = $"2023/{mes}/{dia}";
+
+            DateTime dataAtualizada = DateTime.Parse(data).ToUniversalTime().Date;
+
+            var consultas = _db.TechnicalVisits.Where(x => x.DataDeAbertura == dataAtualizada).ToList();
+
+            return consultas.Count();
         }
         #endregion
 
@@ -172,40 +255,6 @@ namespace ProbabilidadeEstatistica.Controllers
             double amplitude = maior - menor;
 
             return Ok(amplitude);
-        }
-        #endregion
-
-        #region GetManutencaoPrev
-        [HttpGet("PegarTodosDaManutençãoPreventiva")]
-        public ActionResult<double> GetManutencaoPrev()
-        {
-            var consultas = _db.TechnicalVisits.Where(x => x.Motivo == "Manutenção preventiva").ToList();
-
-            return consultas.Count();
-        }
-        #endregion
-
-        #region GetManutencaoPreventiva
-        [HttpGet("GetManutencaoPreventiva")]
-        public ActionResult<double> GetManutencaoPreventiva(string motivo)
-        {
-            var consultas = _db.TechnicalVisits.Where(x => x.Motivo == motivo).ToList();
-
-            return consultas.Count();
-        }
-        #endregion
-
-        #region GetDataEspecifica
-        [HttpGet("GetDataEspecifica")]
-        public ActionResult<double> GetDataEspecifica(string dia, string mes)
-        {
-            string data = $"2023/{mes}/{dia}";
-
-            DateTime dataAtualizada = DateTime.Parse(data).ToUniversalTime().Date;
-
-            var consultas = _db.TechnicalVisits.Where(x => x.DataDeAbertura == dataAtualizada).ToList();
-
-            return consultas.Count();
         }
         #endregion
 
