@@ -59,6 +59,29 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
+        #region GetByStateAndMonth
+        [HttpGet("GetByStateAndMonth")]
+        public IActionResult GetByStateAndMonth(string state)
+        {
+            var techVisits = _db.TechnicalVisits.Where(x => x.Estado == state || x.Estado == state.ToUpper()).ToList();
+
+            var jan = techVisits.Where(x => x.DataDoServico.Month == 01).Count().ToString();
+            var feb = techVisits.Where(x => x.DataDoServico.Month == 02).Count().ToString();
+            var mar = techVisits.Where(x => x.DataDoServico.Month == 03).Count().ToString();
+            var apr = techVisits.Where(x => x.DataDoServico.Month == 04).Count().ToString();
+            var may = techVisits.Where(x => x.DataDoServico.Month == 05).Count().ToString();
+            var jun = techVisits.Where(x => x.DataDoServico.Month == 06).Count().ToString();
+            var jul = techVisits.Where(x => x.DataDoServico.Month == 07).Count().ToString();
+            var aug = techVisits.Where(x => x.DataDoServico.Month == 08).Count().ToString();
+            var sep = techVisits.Where(x => x.DataDoServico.Month == 09).Count().ToString();
+            var oct = techVisits.Where(x => x.DataDoServico.Month == 10).Count().ToString();
+            var nov = techVisits.Where(x => x.DataDoServico.Month == 11).Count().ToString();
+            var dec = techVisits.Where(x => x.DataDoServico.Month == 12).Count().ToString();
+
+            return Ok(jan + ";" + feb + ";" + mar + ";" + apr + ";" + may + ";" + jun + ";" + jul + ";" + aug + ";" + sep + ";" + oct + ";" + nov + ";" + dec);
+        }
+        #endregion
+
         #region GetByCityParams
         [HttpGet("GetByCityParams")]
         public IActionResult GetByCityParams(string city)
@@ -94,6 +117,29 @@ namespace ProbabilidadeEstatistica.Controllers
             var resultString = string.Join(";", results);
 
             return Ok(resultString);
+        }
+        #endregion
+
+        #region GetByCityAndMonth
+        [HttpGet("GetByCityAndMonth")]
+        public IActionResult GetByCityAndMonth(string city)
+        {
+            var techVisits = _db.TechnicalVisits.Where(x => x.Cidade == city).ToList();
+
+            var jan = techVisits.Where(x => x.DataDoServico.Month == 01).Count().ToString();
+            var feb = techVisits.Where(x => x.DataDoServico.Month == 02).Count().ToString();
+            var mar = techVisits.Where(x => x.DataDoServico.Month == 03).Count().ToString();
+            var apr = techVisits.Where(x => x.DataDoServico.Month == 04).Count().ToString();
+            var may = techVisits.Where(x => x.DataDoServico.Month == 05).Count().ToString();
+            var jun = techVisits.Where(x => x.DataDoServico.Month == 06).Count().ToString();
+            var jul = techVisits.Where(x => x.DataDoServico.Month == 07).Count().ToString();
+            var aug = techVisits.Where(x => x.DataDoServico.Month == 08).Count().ToString();
+            var sep = techVisits.Where(x => x.DataDoServico.Month == 09).Count().ToString();
+            var oct = techVisits.Where(x => x.DataDoServico.Month == 10).Count().ToString();
+            var nov = techVisits.Where(x => x.DataDoServico.Month == 11).Count().ToString();
+            var dec = techVisits.Where(x => x.DataDoServico.Month == 12).Count().ToString();
+
+            return Ok(jan + ";" + feb + ";" + mar + ";" + apr + ";" + may + ";" + jun + ";" + jul + ";" + aug + ";" + sep + ";" + oct + ";" + nov + ";" + dec);
         }
         #endregion
 
