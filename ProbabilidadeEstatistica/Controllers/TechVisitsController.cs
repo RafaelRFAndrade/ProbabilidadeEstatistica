@@ -48,6 +48,39 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
+        #region GetByMonth
+        [HttpGet("GetByMonth")]
+        public IActionResult GetByMonth(int month)
+        {
+            var techVisits = _db.TechnicalVisits.Where(x => x.DataDoServico.Month == month).ToList();
+
+            return Ok(techVisits.Count);
+        }
+        #endregion
+
+        #region GetPerMonths
+        [HttpGet("GetPerMonth")]
+        public IActionResult GetperMonths()
+        {
+            var techVisits = _db.TechnicalVisits.ToList();
+
+            var jan = techVisits.Where(x => x.DataDoServico.Month == 01).Count().ToString();
+            var feb = techVisits.Where(x => x.DataDoServico.Month == 02).Count().ToString();
+            var mar = techVisits.Where(x => x.DataDoServico.Month == 03).Count().ToString();
+            var apr = techVisits.Where(x => x.DataDoServico.Month == 04).Count().ToString();
+            var may = techVisits.Where(x => x.DataDoServico.Month == 05).Count().ToString();
+            var jun = techVisits.Where(x => x.DataDoServico.Month == 06).Count().ToString();
+            var jul = techVisits.Where(x => x.DataDoServico.Month == 07).Count().ToString();
+            var aug = techVisits.Where(x => x.DataDoServico.Month == 08).Count().ToString();
+            var sep = techVisits.Where(x => x.DataDoServico.Month == 09).Count().ToString();
+            var oct = techVisits.Where(x => x.DataDoServico.Month == 10).Count().ToString();
+            var nov = techVisits.Where(x => x.DataDoServico.Month == 11).Count().ToString();
+            var dec = techVisits.Where(x => x.DataDoServico.Month == 12).Count().ToString();
+
+            return Ok(jan + ";" + feb + ";" + mar + ";"+ apr + ";" + may + ";" + jun + ";" + jul + ";" + aug + ";" + sep + ";" + oct + ";" + nov + ";" + dec);
+        }
+        #endregion
+
         #region AddTechVisits
         [HttpPost("AddTechVisits")]
         public IActionResult AddTechVisits(List<TechVisitDto> techVisits)
@@ -120,20 +153,31 @@ namespace ProbabilidadeEstatistica.Controllers
 
         #region CV
         [HttpPost("Coeficiente")]
-        public ActionResult<string> CalcularCoeficiente(bool EhAmostral, List<double> numeros)
+        public ActionResult<string> CalcularCoeficiente(List<double> numeros)
         {
-            if (EhAmostral)
-            {
-                return (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / (numeros.Count - 1))) / Media(numeros))* 100).ToString("F2") + "%";
-            }
+            string amostral = (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / (numeros.Count - 1))) / Media(numeros)) * 100).ToString("F2") + "%";
+            string populacional = (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count)) / Media(numeros)) * 100).ToString("F2") + "%";
 
-            return (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count)) / Media(numeros)) * 100).ToString("F2") + "%";
+            return Ok("amostral = " + amostral + "\n" + "populacional = " + populacional);
         }
         #endregion
 
-        #region GetAllManutencaoPreventiva
-        [HttpPost("PegarTodosDaManutençãoPreventiva")]
-        public ActionResult<double> CalcularNumeroPorAno()
+        #region Amplitude
+        [HttpPost("Amplitude")]
+        public ActionResult<double> Amplitude(List<double> numeros)
+        {
+            double maior = numeros.Max();
+            double menor = numeros.Min();
+
+            double amplitude = maior - menor;
+
+            return Ok(amplitude);
+        }
+        #endregion
+
+        #region GetManutencaoPrev
+        [HttpGet("PegarTodosDaManutençãoPreventiva")]
+        public ActionResult<double> GetManutencaoPrev()
         {
             var consultas = _db.TechnicalVisits.Where(x => x.Motivo == "Manutenção preventiva").ToList();
 
@@ -141,9 +185,19 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
-        #region GetAllData
-        [HttpPost("PegarTodosPorData")]
-        public ActionResult<double> CalcularNumeroPorAno(string dia, string mes)
+        #region GetManutencaoPreventiva
+        [HttpGet("GetManutencaoPreventiva")]
+        public ActionResult<double> GetManutencaoPreventiva(string motivo)
+        {
+            var consultas = _db.TechnicalVisits.Where(x => x.Motivo == motivo).ToList();
+
+            return consultas.Count();
+        }
+        #endregion
+
+        #region GetDataEspecifica
+        [HttpGet("GetDataEspecifica")]
+        public ActionResult<double> GetDataEspecifica(string dia, string mes)
         {
             string data = $"2023/{mes}/{dia}";
 
