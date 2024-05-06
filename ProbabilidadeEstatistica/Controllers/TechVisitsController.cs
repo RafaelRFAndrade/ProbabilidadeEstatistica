@@ -101,8 +101,8 @@ namespace ProbabilidadeEstatistica.Controllers
 
             // Agrupa as visitas técnicas por cidade e conta a quantidade de visitas para cada cidade
             var visitsByCity = techVisits
-                .GroupBy(x => x.Cidade)
-                .Select(g => new { City = g.Key, Count = g.Count() });
+                .GroupBy(x => x.Cidade.ToUpper())
+                .Select(g => new { City = g.Key, Count = g.Count() }).OrderByDescending(x => x.Count);
 
             // Cria uma lista para armazenar os resultados
             var results = new List<string>();
@@ -111,6 +111,7 @@ namespace ProbabilidadeEstatistica.Controllers
             foreach (var visit in visitsByCity)
             {
                 results.Add($"{visit.City}: {visit.Count}");
+                if (results.Count == 10) break;
             }
 
             // Concatena os resultados em uma única string separada por ponto e vírgula
@@ -153,6 +154,22 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
+        [HttpGet("GetByMonthAndState")]
+        public IActionResult GetByMonthAndState(int month, string state)
+        {
+            var techVisits = _db.TechnicalVisits.Where(x => x.DataDoServico.Month == month && x.Estado == state).ToList();
+
+            return Ok(techVisits.Count);
+        }
+
+        [HttpGet("GetByMonthAndCity")]
+        public IActionResult GetByMonthAndCity(int month, string city)
+        {
+            var techVisits = _db.TechnicalVisits.Where(x => x.DataDoServico.Month == month && x.Cidade == city).ToList();
+
+            return Ok(techVisits.Count);
+        }
+
         #region GetPerMonths
         [HttpGet("GetPerMonth")]
         public IActionResult GetperMonths()
@@ -186,13 +203,51 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
-        #region GetManutencaoPreventiva
-        [HttpGet("GetManutencaoPreventiva")]
-        public ActionResult<double> GetManutencaoPreventiva(string motivo)
+        #region GetPerReasonsMonths
+        [HttpGet("GetPerReasonsMonths")]
+        public ActionResult<double> GetPerReasonsMonths(string motivo)
         {
-            var consultas = _db.TechnicalVisits.Where(x => x.Motivo == motivo).ToList();
+            var techVisits = _db.TechnicalVisits.Where(x => x.Motivo == motivo || x.Motivo == motivo.ToUpper()).ToList();
 
-            return consultas.Count();
+            var jan = techVisits.Where(x => x.DataDoServico.Month == 01).Count().ToString();
+            var feb = techVisits.Where(x => x.DataDoServico.Month == 02).Count().ToString();
+            var mar = techVisits.Where(x => x.DataDoServico.Month == 03).Count().ToString();
+            var apr = techVisits.Where(x => x.DataDoServico.Month == 04).Count().ToString();
+            var may = techVisits.Where(x => x.DataDoServico.Month == 05).Count().ToString();
+            var jun = techVisits.Where(x => x.DataDoServico.Month == 06).Count().ToString();
+            var jul = techVisits.Where(x => x.DataDoServico.Month == 07).Count().ToString();
+            var aug = techVisits.Where(x => x.DataDoServico.Month == 08).Count().ToString();
+            var sep = techVisits.Where(x => x.DataDoServico.Month == 09).Count().ToString();
+            var oct = techVisits.Where(x => x.DataDoServico.Month == 10).Count().ToString();
+            var nov = techVisits.Where(x => x.DataDoServico.Month == 11).Count().ToString();
+            var dec = techVisits.Where(x => x.DataDoServico.Month == 12).Count().ToString();
+
+            return Ok(jan + ";" + feb + ";" + mar + ";" + apr + ";" + may + ";" + jun + ";" + jul + ";" + aug + ";" + sep + ";" + oct + ";" + nov + ";" + dec);
+
+        }
+        #endregion
+
+        #region GetByReason
+        [HttpGet("GetByReason")]
+        public IActionResult GetByReason()
+        {
+            var techVisits = _db.TechnicalVisits.ToList();
+
+            var visitsByReason = techVisits
+                .GroupBy(x => x.Motivo.ToUpper())
+                .Select(g => new { Reason = g.Key, Count = g.Count() }).OrderByDescending(x => x.Count);
+
+            var results = new List<string>();
+
+            foreach (var visit in visitsByReason)
+            {
+                results.Add($"{visit.Reason}: {visit.Count}");
+                if (results.Count == 10) break;
+            }
+
+            var resultString = string.Join(";", results);
+
+            return Ok(resultString);
         }
         #endregion
 
@@ -244,67 +299,7 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
-        #region VarianciaPopulacional
-        [HttpPost("VariancaPopulacional")]
-        public ActionResult<double> CalcularVP(List<double> numeros)
-        {
-            double variancia = numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count;
-
-            return variancia;
-        }
-        #endregion
-
-        #region VarianciaAmostral
-        [HttpPost("VariancaAmostral")]
-        public ActionResult<double> CalcularVA(List<double> numeros)
-        {
-            double variancia = numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / (numeros.Count - 1);
-
-            return variancia;
-        }
-        #endregion
-
-        #region DesvioPopulacional
-        [HttpPost("DP")]
-        public ActionResult<double> CalcularDP(List<double> numeros)
-        {
-            return Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count);
-        }
-        #endregion
-
-        #region DesvioAmostral
-        [HttpPost("DA")]
-        public ActionResult<double> CalcularDA(List<double> numeros)
-        {
-            return Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / (numeros.Count - 1));
-        }
-        #endregion
-
-        #region CV
-        [HttpPost("Coeficiente")]
-        public ActionResult<string> CalcularCoeficiente(List<double> numeros)
-        {
-            string amostral = (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / (numeros.Count - 1))) / Media(numeros)) * 100).ToString("F2") + "%";
-            string populacional = (((Math.Sqrt(numeros.Sum(val => Math.Pow(val - Media(numeros), 2)) / numeros.Count)) / Media(numeros)) * 100).ToString("F2") + "%";
-
-            return Ok("amostral = " + amostral + "\n" + "populacional = " + populacional);
-        }
-        #endregion
-
-        #region Amplitude
-        [HttpPost("Amplitude")]
-        public ActionResult<double> Amplitude(List<double> numeros)
-        {
-            double maior = numeros.Max();
-            double menor = numeros.Min();
-
-            double amplitude = maior - menor;
-
-            return Ok(amplitude);
-        }
-        #endregion
-
-        #region MediaModaMediana
+        #region Calculos
         [HttpPost("Estatisticas")]
         public IActionResult Estatisticas(List<double> numeros)
         {
@@ -336,7 +331,6 @@ namespace ProbabilidadeEstatistica.Controllers
 
             var resultado = new
             {
-                ListaOrdenada = numerosOrdenados,
                 Media = media.ToString("F2"),
                 Moda = moda,
                 Mediana = mediana
@@ -344,11 +338,63 @@ namespace ProbabilidadeEstatistica.Controllers
 
             return Ok(resultado);
         }
-        #endregion
 
-        private double Media(List<double> valores)
+        [HttpPost("CalcularVariancias")]
+        public ActionResult<double> CalcularVariancias(List<double> numeros)
         {
-            return valores.Average();
+            double varianciaP = numeros.Sum(val => Math.Pow(val - numeros.Average(), 2)) / numeros.Count;
+            double varianciaA = numeros.Sum(val => Math.Pow(val - numeros.Average(), 2)) / (numeros.Count-1);
+
+            var resultado = new
+            {
+                VarianciaA = varianciaA.ToString("F2"),
+                VarianciaP = varianciaP.ToString("F2")
+            };
+
+            return Ok(resultado);
         }
+
+        [HttpPost("CalcularDesvios")]
+        public ActionResult<double> CalcularDesvios(List<double> numeros)
+        {
+            double desvioP = Math.Sqrt(numeros.Sum(val => Math.Pow(val - numeros.Average(), 2)) / numeros.Count);
+            double desvioA = Math.Sqrt(numeros.Sum(val => Math.Pow(val - numeros.Average(), 2)) / (numeros.Count - 1));
+
+            var resultado = new
+            {
+                DesvioP = desvioP.ToString("F2"),
+                DesvioA = desvioA.ToString("F2")
+            };
+
+            return Ok(resultado);
+        }
+
+        [HttpPost("Coeficiente")]
+        public ActionResult<string> CalcularCoeficiente(List<double> numeros)
+        {
+            var populacional = ((Math.Sqrt(numeros.Sum(val => Math.Pow(val - numeros.Average(), 2)) / numeros.Count)) / numeros.Average());
+            var amostral = ((Math.Sqrt(numeros.Sum(val => Math.Pow(val - numeros.Average(), 2)) / (numeros.Count - 1))) / numeros.Average());
+
+
+            var resultado = new
+            {
+                Amostral = (amostral * 100).ToString("F2") + "%",
+                Populacional = (populacional * 100).ToString("F2") + "%"
+            };
+
+            return Ok(resultado);
+        }
+
+        [HttpPost("Amplitude")]
+        public ActionResult<double> Amplitude(List<double> numeros)
+        {
+            double maior = numeros.Max();
+            double menor = numeros.Min();
+
+            double amplitude = maior - menor;
+
+            return Ok(amplitude);
+        }               
+        #endregion
     }
 }
