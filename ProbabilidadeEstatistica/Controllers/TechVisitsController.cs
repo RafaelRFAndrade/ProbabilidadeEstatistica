@@ -391,9 +391,12 @@ namespace ProbabilidadeEstatistica.Controllers
             double maior = numeros.Max();
             double menor = numeros.Min();
 
-            double amplitude = maior - menor;
+            var resultado = new
+            {
+                Amplitude = (maior - menor).ToString("F2")
+            };
 
-            return Ok(amplitude);
+            return Ok(resultado);
         }               
         #endregion
     }
