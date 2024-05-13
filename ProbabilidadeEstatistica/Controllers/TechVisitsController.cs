@@ -154,22 +154,6 @@ namespace ProbabilidadeEstatistica.Controllers
         }
         #endregion
 
-        [HttpGet("GetByMonthAndState")]
-        public IActionResult GetByMonthAndState(int month, string state)
-        {
-            var techVisits = _db.TechnicalVisits.Where(x => x.DataDoServico.Month == month && x.Estado == state).ToList();
-
-            return Ok(techVisits.Count);
-        }
-
-        [HttpGet("GetByMonthAndCity")]
-        public IActionResult GetByMonthAndCity(int month, string city)
-        {
-            var techVisits = _db.TechnicalVisits.Where(x => x.DataDoServico.Month == month && x.Cidade == city).ToList();
-
-            return Ok(techVisits.Count);
-        }
-
         #region GetPerMonths
         [HttpGet("GetPerMonth")]
         public IActionResult GetperMonths()
